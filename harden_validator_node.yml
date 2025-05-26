@@ -1,0 +1,65 @@
+- name: Harden Validator Node (Firewall and SSH)
+  hosts: validator_nodes
+  become: yes
+  vars:
+    # List of trusted IPs allowed to access SSH
+    allowed_ssh_ips:
+      - "192.0.2.10"  # Replace with your actual IP address
+
+  tasks:
+    # Ensure UFW firewall is installed
+    - name: Ensure UFW is installed and enabled
+      apt:
+        name: ufw
+        state: present
+      notify: enable ufw
+
+    # Set default policy to deny all incoming connections
+    - name: Default deny all incoming traffic
+      ufw:
+        state: enabled
+        policy: deny
+        direction: incoming
+
+    # Allow Ethereum P2P port (30303) for node connectivity
+    - name: Allow P2P traffic on Ethereum port (TCP 30303)
+      ufw:
+        rule: allow
+        port: 30303
+        proto: tcp
+
+    # Allow SSH only from whitelisted IP addresses
+    - name: Allow SSH only from specific IPs
+      ufw:
+        rule: allow
+        port: 22
+        proto: tcp
+        from_ip: "{{ item }}"
+      with_items: "{{ allowed_ssh_ips }}"
+
+    # Disable SSH password authentication
+    - name: Disable password-based SSH authentication
+      lineinfile:
+        path: /etc/ssh/sshd_config
+        regexp: '^#?PasswordAuthentication'
+        line: 'PasswordAuthentication no'
+        state: present
+
+    # Disable root login via SSH
+    - name: Disable root SSH login
+      lineinfile:
+        path: /etc/ssh/sshd_config
+        regexp: '^#?PermitRootLogin'
+        line: 'PermitRootLogin no'
+        state: present
+
+    # Restart SSH service to apply configuration changes
+    - name: Restart SSH service
+      service:
+        name: ssh
+        state: restarted
+
+  handlers:
+    - name: enable ufw
+      ufw:
+        state: enabled
