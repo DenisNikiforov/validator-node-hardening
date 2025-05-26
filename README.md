@@ -33,3 +33,23 @@ This Ansible playbook:
 ## 📁 Files Included
 
 - `harden_validator_node.yml`: The Ansible playbook  
+
+## ✅ Prerequisites
+
+Before using this playbook, make sure the following requirements are met:
+
+- **Target System**:  
+  - Ubuntu 22.04 LTS (or compatible Debian-based distro)
+  - Validator node exposed to Ethereum P2P traffic (port 30303)
+
+- **Control Machine** (where you run Ansible):  
+  - Python 3.x  
+  - Ansible 2.10+ installed  
+  - SSH key access to the validator node
+
+- **Other**:  
+  - UFW (Uncomplicated Firewall) will be configured; ensure it's compatible with your setup  
+  - You have permission to modify `/etc/ssh/sshd_config` and restart SSH on the validator node  
+  - You have whitelisted the IP(s) that will manage the node (to avoid being locked out)
+
+> ⚠️ **Important**: Always test this playbook on a staging or backup node before applying to production validators.
